@@ -16,18 +16,16 @@ export class SideMenuOptions{
   menuOptions: MenuOptions[] = [
 
     {
+      icon:'fa-solid fa-chart-line',
       label:'Trending',
-      subLabel:'Popular Gifs',
       route:'/dashboard/trending',
-      icon:'fa-solid fa-chart-line'
-
+      subLabel:'Popular Gifs',
     },
     {
       label:'Search',
       subLabel:'Search Gifs',
       route:'/dashboard/search',
       icon:'fa-solid fa-magnifying-glass'
-
     },
 
   ]
