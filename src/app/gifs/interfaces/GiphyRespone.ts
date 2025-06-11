@@ -282,3 +282,10 @@ export interface GiphyRespone {
   meta: Meta;
   pagination: Pagination;
 }
+
+export interface GiphyResponeMin{
+  url: string;
+  id: string;
+  title: string;
+}
+

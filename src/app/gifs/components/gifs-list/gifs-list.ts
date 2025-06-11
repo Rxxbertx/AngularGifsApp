@@ -1,6 +1,6 @@
-import {Component, input, InputSignal} from '@angular/core';
+import {Component, input, Input, InputSignal,} from '@angular/core';
 import {GifsListItem} from './gifs-list-item/gifs-list-item';
-import {GifItemType} from '../../interfaces/gif-item-interface';
+import {GiphyResponeMin} from '../../interfaces/GiphyRespone';
 
 @Component({
   selector: 'app-gifs-list',
@@ -12,7 +12,6 @@ import {GifItemType} from '../../interfaces/gif-item-interface';
 })
 export class GifsList {
 
-  gifsList : InputSignal<GifItemType[]> = input.required()
-
+  gifsList: InputSignal<GiphyResponeMin[]> = input.required();
 
 }

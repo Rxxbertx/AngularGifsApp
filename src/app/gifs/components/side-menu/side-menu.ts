@@ -13,4 +13,8 @@ import {SideMenuOptions} from './side-menu-options/side-menu-options';
 })
 export class SideMenu {
 
+
+
+
+
 }

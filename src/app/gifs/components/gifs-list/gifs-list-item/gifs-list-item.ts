@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {GifItemType} from '../../../interfaces/gif-item-interface';
+import {GiphyResponeMin} from '../../../interfaces/GiphyRespone';
 
 @Component({
   selector: 'app-gifs-list-item',
@@ -9,6 +9,6 @@ import {GifItemType} from '../../../interfaces/gif-item-interface';
 })
 export class GifsListItem {
 
-  @Input() data!: GifItemType;
+  @Input() data!: GiphyResponeMin;
 
 }
