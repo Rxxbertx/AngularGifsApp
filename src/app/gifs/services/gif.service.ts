@@ -3,7 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {environment} from '@environments/environment';
 import {GiphyRespone, GiphyResponeMin} from '../interfaces/GiphyRespone';
 import {GifMapper} from '../../mapper/gifs/gif.mapper';
-import {map, tap} from 'rxjs';
+import {map} from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class GifService {
@@ -11,7 +11,9 @@ export class GifService {
   private httpClient: HttpClient = inject(HttpClient);
 
   trendingGifs: WritableSignal<GiphyResponeMin[]> = signal<GiphyResponeMin[]>([])
+  searchedGifs: WritableSignal<GiphyResponeMin[]> = signal<GiphyResponeMin[]>([])
   trendingGifsLoading = signal(false);
+  searchedGifsLoading = signal(false);
   private trendingPage = signal(1);
   private searchPage = signal(1);
   searchHistory = signal<Record<string, GiphyResponeMin[]>>(loadHistoryGifsByLocalStorage());
@@ -49,8 +51,7 @@ export class GifService {
         const gifs: GiphyResponeMin[] = GifMapper.mapGiphyResponseDataItemsToGiphyResponseMinArray(resp.data);
         this.trendingGifs.update((actualGifs) => [...actualGifs, ...gifs]);
         this.trendingGifsLoading.set(false);
-        this.trendingPage.update((actual)=>actual+1)
-
+        this.trendingPage.update((actual) => actual + 1)
 
       }
     )
@@ -61,45 +62,64 @@ export class GifService {
     if (!query)
       return;
 
-    if (this.actualQuery != query){
-      this.searchPage.set(0);
-    }
+    this.searchPage.set(0);
+    this.searchedGifs.set([]);
 
     this.actualQuery = query;
 
-    return this.httpClient
+    this.apiSearchCall(query);
+
+  }
+
+  apiSearchCall(query: string) {
+
+    if (this.searchedGifsLoading())
+      return;
+
+    this.searchedGifsLoading.set(true);
+
+
+    this.httpClient
       .get<GiphyRespone>(`${environment.giphyUrl}/gifs/search`,
         {
           params: {
             api_key: environment.giphyApiKey,
-            limit: 25,
+            limit: 100,
             q: query,
-            offset: 25 * this.searchPage(),
+            offset: 100 * this.searchPage()
           }
         }
       ).pipe(
-        map((resp: GiphyRespone) => {
+      map((resp: GiphyRespone) => {
 
           return GifMapper.mapGiphyResponseDataItemsToGiphyResponseMinArray(resp.data);
 
-        }),
-        tap((resp: GiphyResponeMin[]) => {
-
-          this.searchPage.update((actual)=>actual+1)
-
-          this.searchHistory.update((items) => ({
-            [query.toLowerCase()]: resp,
-            ...items
-          }));
-
-        })
+        }
       )
+    ).subscribe((resp: GiphyResponeMin[]) => {
+
+        this.searchedGifs.update((actualGifs) => [...actualGifs, ...resp])
+        this.searchPage.update((actual) => actual + 1);
+
+      this.searchHistory.update((items) => {
+        const key = query.toLowerCase();
+        const { [key]: _, ...rest } = items; // Remove the key if it exists
+        return {
+          [key]: this.searchedGifs(),
+          ...rest
+        };
+      });
+
+      this.searchedGifsLoading.set(false);
+
+      }
+    )
+
   }
 
+
   getHistoryGifs(query: string): GiphyResponeMin[] {
-
     return this.searchHistory()[query] ?? [];
-
   }
 
 
@@ -111,12 +131,21 @@ export class GifService {
         this.loadTrendingGifs();
         break;
       case 'search':
-        this.searchGifs(this.actualQuery);
+        this.searchNewGifs();
         break;
       default:
         break;
     }
 
+  }
+
+  private searchNewGifs() {
+    this.apiSearchCall(this.actualQuery);
+  }
+
+  setActualQuery(query: string) {
+
+    this.actualQuery = query;
 
   }
 }

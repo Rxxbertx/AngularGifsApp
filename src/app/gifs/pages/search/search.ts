@@ -1,4 +1,4 @@
-import {Component, inject, signal, WritableSignal} from '@angular/core';
+import {Component, computed, inject, signal, WritableSignal} from '@angular/core';
 import {GifsList} from "../../components/gifs-list/gifs-list";
 import {GifService} from '../../services/gif.service';
 import {GiphyResponeMin} from '../../interfaces/GiphyRespone';
@@ -15,15 +15,13 @@ import {GiphyResponeMin} from '../../interfaces/GiphyRespone';
 export default class Search {
 
   gifsService: GifService = inject(GifService);
-  searchedGifs: WritableSignal<GiphyResponeMin[]> = signal([]);
+
+  searchedGifs = computed(()=> this.gifsService.searchedGifs());
+
 
   onSearch(query: string): void {
 
-    this.gifsService.searchGifs(query)?.subscribe((resp: GiphyResponeMin[]): void => {
-
-      this.searchedGifs.update((actualGifs) => [...actualGifs, ...resp]);
-
-    });
+    this.gifsService.searchGifs(query);
 
   }
 

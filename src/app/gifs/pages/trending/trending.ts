@@ -16,13 +16,5 @@ export default class Trending {
 
   gifsService:GifService = inject(GifService);
 
-  onScroll()
-  {
-
-    console.log('scroll');
-
-  }
-
-
 }
 
