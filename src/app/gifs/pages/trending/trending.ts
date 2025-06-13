@@ -2,6 +2,7 @@ import {Component, inject} from '@angular/core';
 import {GifsList} from '../../components/gifs-list/gifs-list';
 import {GifService} from '../../services/gif.service';
 
+
 @Component({
   selector: 'app-trending',
   imports: [
@@ -15,7 +16,12 @@ export default class Trending {
 
   gifsService:GifService = inject(GifService);
 
+  onScroll()
+  {
 
+    console.log('scroll');
+
+  }
 
 
 }

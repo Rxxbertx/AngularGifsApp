@@ -12,6 +12,8 @@ export class GifService {
 
   trendingGifs: WritableSignal<GiphyResponeMin[]> = signal<GiphyResponeMin[]>([])
   trendingGifsLoading = signal(false);
+  private trendingPage = signal(1);
+  private searchPage = signal(1);
   searchHistory = signal<Record<string, GiphyResponeMin[]>>(loadHistoryGifsByLocalStorage());
   searchHistoryKeys = computed(() => Object.keys(this.searchHistory()))
 
@@ -20,25 +22,35 @@ export class GifService {
       localStorage.setItem("gifs", JSON.stringify(this.searchHistory()));
     })
 
+  private actualQuery: string = '';
+
   constructor() {
     this.loadTrendingGifs();
   }
 
   loadTrendingGifs() {
 
+    if (this.trendingGifsLoading())
+      return;
+
+    this.trendingGifsLoading.set(true);
+
     this.httpClient.get<GiphyRespone>(
       `${environment.giphyUrl}/gifs/trending`,
       {
         params: {
           api_key: environment.giphyApiKey,
-          limit: 20,
+          limit: 25,
+          offset: 25 * this.trendingPage()
         },
       }
     ).subscribe((resp) => {
 
         const gifs: GiphyResponeMin[] = GifMapper.mapGiphyResponseDataItemsToGiphyResponseMinArray(resp.data);
-        this.trendingGifs.set(gifs);
+        this.trendingGifs.update((actualGifs) => [...actualGifs, ...gifs]);
         this.trendingGifsLoading.set(false);
+        this.trendingPage.update((actual)=>actual+1)
+
 
       }
     )
@@ -46,13 +58,23 @@ export class GifService {
 
   searchGifs(query: string) {
 
+    if (!query)
+      return;
+
+    if (this.actualQuery != query){
+      this.searchPage.set(0);
+    }
+
+    this.actualQuery = query;
+
     return this.httpClient
       .get<GiphyRespone>(`${environment.giphyUrl}/gifs/search`,
         {
           params: {
             api_key: environment.giphyApiKey,
-            limit: 20,
-            q: query
+            limit: 25,
+            q: query,
+            offset: 25 * this.searchPage(),
           }
         }
       ).pipe(
@@ -62,6 +84,9 @@ export class GifService {
 
         }),
         tap((resp: GiphyResponeMin[]) => {
+
+          this.searchPage.update((actual)=>actual+1)
+
           this.searchHistory.update((items) => ({
             [query.toLowerCase()]: resp,
             ...items
@@ -78,6 +103,22 @@ export class GifService {
   }
 
 
+  loadNewGifs(s: string) {
+
+    switch (s) {
+
+      case 'trending':
+        this.loadTrendingGifs();
+        break;
+      case 'search':
+        this.searchGifs(this.actualQuery);
+        break;
+      default:
+        break;
+    }
+
+
+  }
 }
 
 function loadHistoryGifsByLocalStorage(): Record<string, GiphyResponeMin[]> {

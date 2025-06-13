@@ -1,9 +1,16 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+<div class="h-full bg-amber-300 grid grid-cols-2 md:grid-cols-4 gap-4"
+     (scroll)="onScroll()"
+     #gifsDiv
+>
 
-  @for (GifsListItem of gifsList(); track GifsListItem.id) {
-    <app-gifs-list-item [data]="GifsListItem"/>
+  @for (GifsListArray of gifsListMasonry(); track $index) {
+
+    <div class="grid gap-4">
+
+      @for (GifList of GifsListArray; track GifList.id) {
+        <app-gifs-list-item [data]="GifList"/>
+      }
+
+    </div>
   }
-
 </div>
-
-

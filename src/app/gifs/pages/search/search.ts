@@ -19,9 +19,9 @@ export default class Search {
 
   onSearch(query: string): void {
 
-    this.gifsService.searchGifs(query).subscribe((resp: GiphyResponeMin[]): void => {
+    this.gifsService.searchGifs(query)?.subscribe((resp: GiphyResponeMin[]): void => {
 
-      this.searchedGifs.set(resp);
+      this.searchedGifs.update((actualGifs) => [...actualGifs, ...resp]);
 
     });
 
